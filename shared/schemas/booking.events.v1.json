@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "event_type": "booking_event",
+  "event_id": "",
+  "event_time": "",
+  "source": "amadeus",
+  "payload": {
+    "pnr": "",
+    "passenger_id": "",
+    "passenger_name": "",
+    "loyalty_tier": "NONE | SILVER | GOLD | PLATINUM",
+    "special_assistance": false,
+    "itinerary": {
+      "flight_number": "",
+      "airline_code": "",
+      "origin_airport": "",
+      "destination_airport": "",
+      "scheduled_departure": "",
+      "scheduled_arrival": "",
+      "connection_flight_number": ""
+    }
+  }
+}

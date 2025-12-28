@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "event_type": "inventory_event",
+  "event_id": "",
+  "event_time": "",
+  "source": "internal_inventory",
+  "payload": {
+    "flight_number": "",
+    "airline_code": "",
+    "origin_airport": "",
+    "destination_airport": "",
+    "scheduled_departure": "",
+    "capacity": {
+      "total_seats": 0,
+      "available_seats": 0,
+      "cabin": "ECONOMY | PREMIUM_ECONOMY | BUSINESS | FIRST"
+    }
+  }
+}

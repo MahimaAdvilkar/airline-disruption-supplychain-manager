@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "event_type": "disruption_state",
+  "event_id": "",
+  "event_time": "",
+  "payload": {
+    "disruption_id": "",
+    "scope": {
+      "airport": "",
+      "region": "",
+      "primary_flight_number": ""
+    },
+    "metrics": {
+      "delayed_flights_count": 0,
+      "cancelled_flights_count": 0,
+      "avg_delay_minutes": 0,
+      "passengers_impacted_est": 0,
+      "connections_at_risk_est": 0
+    },
+    "severity": "LOW | MEDIUM | HIGH | CRITICAL",
+    "confidence": 0.0
+  }
+}

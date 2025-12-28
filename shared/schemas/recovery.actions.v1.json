@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "event_type": "recovery_actions",
+  "event_id": "",
+  "event_time": "",
+  "payload": {
+    "disruption_id": "",
+    "actions": [
+      {
+        "action_id": "",
+        "action_type": "REBOOK | REFUND | HOTEL | MEAL_VOUCHER | ESCALATE | CHARTER_REQUEST",
+        "priority": "P0 | P1 | P2 | P3",
+        "target": {
+          "pnr": "",
+          "passenger_id": ""
+        },
+        "details": {
+          "recommended_option": "",
+          "notes": ""
+        },
+        "status": "PROPOSED | VALIDATED | SENT"
+      }
+    ]
+  }
+}
