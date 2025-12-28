@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "event_type": "flight_ops_event",
+  "event_id": "",
+  "event_time": "",
+  "source": "amadeus",
+  "payload": {
+    "flight_number": "",
+    "airline_code": "",
+    "origin_airport": "",
+    "destination_airport": "",
+    "scheduled_departure": "",
+    "status": "ON_TIME | DELAYED | CANCELLED",
+    "delay_minutes": 0,
+    "reason_code": "",
+    "affected_airport": ""
+  }
+}

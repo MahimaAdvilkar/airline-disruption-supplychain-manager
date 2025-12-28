@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "event_type": "passenger_cohorts",
+  "event_id": "",
+  "event_time": "",
+  "payload": {
+    "disruption_id": "",
+    "cohorts": [
+      {
+        "cohort_id": "",
+        "priority": "P0 | P1 | P2 | P3",
+        "reason": "TIGHT_CONNECTION | VIP | FAMILY | SPECIAL_ASSISTANCE | MISCONNECT_RISK",
+        "passengers": [
+          {
+            "passenger_id": "",
+            "pnr": "",
+            "loyalty_tier": "NONE | SILVER | GOLD | PLATINUM",
+            "special_assistance": false,
+            "itinerary": {
+              "flight_number": "",
+              "origin_airport": "",
+              "destination_airport": "",
+              "scheduled_departure": "",
+              "connection_flight_number": ""
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

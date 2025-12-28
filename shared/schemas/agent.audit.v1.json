@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "event_type": "agent_audit",
+  "event_id": "",
+  "event_time": "",
+  "payload": {
+    "disruption_id": "",
+    "inputs": {
+      "disruption_state_event_id": "",
+      "passenger_cohorts_event_id": ""
+    },
+    "model": {
+      "provider": "vertex_ai",
+      "name": "gemini",
+      "version": ""
+    },
+    "decision_summary": {
+      "severity": "",
+      "total_actions": 0,
+      "key_reasons": []
+    },
+    "safety_and_guardrails": {
+      "validated": true,
+      "blocked_actions": 0,
+      "notes": ""
+    },
+    "performance": {
+      "end_to_end_latency_ms": 0,
+      "model_latency_ms": 0
+    }
+  }
+}
