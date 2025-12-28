@@ -5,9 +5,14 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def get_disruptions():
+def get_disruptions(
+    airport: str | None = None,
+    severity: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
     t = now_utc()
-    return [
+    items = [
         {
             "disruption_id": "dsp_123",
             "severity": "HIGH",
@@ -38,6 +43,13 @@ def get_disruptions():
         },
     ]
 
+    if airport:
+        items = [d for d in items if d["airport"] == airport]
+
+    if severity:
+        items = [d for d in items if d["severity"] == severity]
+
+    return items[offset : offset + limit]
 
 def get_disruption_by_id(disruption_id: str):
     items = get_disruptions()

@@ -13,8 +13,19 @@ router = APIRouter()
 
 
 @router.get("/disruptions", response_model=DisruptionListResponse)
-def list_disruptions():
-    return {"items": store.get_disruptions()}
+def list_disruptions(
+    airport: str | None = None,
+    severity: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    items = store.get_disruptions(
+        airport=airport,
+        severity=severity,
+        limit=limit,
+        offset=offset,
+    )
+    return {"items": items}
 
 
 @router.get("/disruptions/{disruption_id}", response_model=DisruptionDetail)
