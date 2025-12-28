@@ -134,7 +134,7 @@ Example error:
 
 ## 5) Recovery Actions
 
-**GET /disruptions/{disruption_id}/action**
+**GET /disruptions/{disruption_id}/actions**
 
 ```json
 {
