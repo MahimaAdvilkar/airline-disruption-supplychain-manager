@@ -67,3 +67,7 @@ def get_audit(disruption_id: str):
     if not audit:
         raise HTTPException(status_code=404, detail="Disruption not found")
     return audit
+
+@router.get("/simulator/state")
+def get_simulator_state():
+    return {"state": store.get_current_state()}

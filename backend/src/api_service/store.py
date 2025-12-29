@@ -234,3 +234,11 @@ def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
     }
     _STATE.append(new_item)
     return new_item
+
+def get_current_state():
+    """
+    Returns the full in-memory disruption state.
+    In production, this would map to a Kafka state store / materialized view.
+    """
+    _ensure_seed_data()
+    return _STATE
