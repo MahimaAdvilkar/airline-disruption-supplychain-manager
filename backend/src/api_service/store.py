@@ -1,18 +1,21 @@
 from datetime import datetime, timezone
+from typing import Dict, Any, List
+
+# Simple in-memory store (later replaced by Kafka state store / Redis / DB)
+_STATE: List[Dict[str, Any]] = []
 
 
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def get_disruptions(
-    airport: str | None = None,
-    severity: str | None = None,
-    limit: int = 50,
-    offset: int = 0,
-):
+def _ensure_seed_data():
+    global _STATE
+    if _STATE:
+        return
+
     t = now_utc()
-    items = [
+    _STATE = [
         {
             "disruption_id": "dsp_123",
             "severity": "HIGH",
@@ -43,18 +46,30 @@ def get_disruptions(
         },
     ]
 
+
+def get_disruptions(
+    airport: str | None = None,
+    severity: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    _ensure_seed_data()
+
+    items = list(_STATE)
+
     if airport:
-        items = [d for d in items if d["airport"] == airport]
+        items = [d for d in items if d.get("airport") == airport]
 
     if severity:
-        items = [d for d in items if d["severity"] == severity]
+        items = [d for d in items if d.get("severity") == severity]
 
     return items[offset : offset + limit]
 
+
 def get_disruption_by_id(disruption_id: str):
-    items = get_disruptions()
-    for d in items:
-        if d["disruption_id"] == disruption_id:
+    _ensure_seed_data()
+    for d in _STATE:
+        if d.get("disruption_id") == disruption_id:
             return d
     return None
 
@@ -64,7 +79,6 @@ def get_disruption_detail(disruption_id: str):
     if not base:
         return None
 
-    # Enrich with scope + cohorts summary
     detail = {
         "disruption_id": base["disruption_id"],
         "severity": base["severity"],
@@ -78,24 +92,9 @@ def get_disruption_detail(disruption_id: str):
             "avg_delay_minutes": 52 if base["severity"] in ("HIGH", "CRITICAL") else 25,
         },
         "cohorts": [
-            {
-                "cohort_id": "c_001",
-                "priority": "P0",
-                "reason": "SPECIAL_ASSISTANCE",
-                "passenger_count": 18,
-            },
-            {
-                "cohort_id": "c_002",
-                "priority": "P1",
-                "reason": "TIGHT_CONNECTION",
-                "passenger_count": 64,
-            },
-            {
-                "cohort_id": "c_003",
-                "priority": "P2",
-                "reason": "LOYALTY_PREMIUM",
-                "passenger_count": 40,
-            },
+            {"cohort_id": "c_001", "priority": "P0", "reason": "SPECIAL_ASSISTANCE", "passenger_count": 18},
+            {"cohort_id": "c_002", "priority": "P1", "reason": "TIGHT_CONNECTION", "passenger_count": 64},
+            {"cohort_id": "c_003", "priority": "P2", "reason": "LOYALTY_PREMIUM", "passenger_count": 40},
         ],
         "last_updated": base["last_updated"],
     }
@@ -147,10 +146,7 @@ def get_actions(disruption_id: str):
                 "action_type": "REBOOK",
                 "priority": "P0",
                 "target": {"pnr": "AB12CD", "passenger_id": "p_9001"},
-                "details": {
-                    "recommended_option": "UA789 SFO→ORD 03:10Z",
-                    "notes": "Auto-protect under policy",
-                },
+                "details": {"recommended_option": "UA789 SFO→ORD 03:10Z", "notes": "Auto-protect under policy"},
                 "status": "VALIDATED",
                 "created_at": "2025-12-28T00:02:00Z",
             },
@@ -188,3 +184,61 @@ def get_audit(disruption_id: str):
         "performance": {"end_to_end_latency_ms": 1240, "model_latency_ms": 680},
         "created_at": "2025-12-28T00:02:01Z",
     }
+
+
+def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
+    """
+    Update or create a disruption record based on a flight disruption event.
+    This simulates what a Kafka consumer + ksqlDB state table would produce.
+    """
+    _ensure_seed_data()
+    global _STATE
+
+    flight_number = payload.get("flight_number", "UNKNOWN")
+    airport = payload.get("airport", "UNK")
+    delay_minutes = int(payload.get("delay_minutes", 0))
+    reason = payload.get("reason", "UNKNOWN")
+
+    severity = "LOW"
+    if delay_minutes >= 120:
+        severity = "HIGH"
+    elif delay_minutes >= 60:
+        severity = "MEDIUM"
+
+    # Find existing disruption by flight number
+    for d in _STATE:
+        if d.get("primary_flight_number") == flight_number:
+            d["severity"] = severity
+            d["airport"] = airport
+            d["metrics"]["delayed_flights_count"] += 1
+            d["metrics"]["passengers_impacted_est"] += 25
+            d["metrics"]["connections_at_risk_est"] += 5
+            d["last_updated"] = now_utc()
+            d["reason"] = reason
+            return d
+
+    new_item = {
+        "disruption_id": f"dsp_{len(_STATE) + 1000}",
+        "severity": severity,
+        "airport": airport,
+        "region": "US-WEST",
+        "primary_flight_number": flight_number,
+        "metrics": {
+            "delayed_flights_count": 1,
+            "cancelled_flights_count": 0,
+            "passengers_impacted_est": 80,
+            "connections_at_risk_est": 15,
+        },
+        "last_updated": now_utc(),
+        "reason": reason,
+    }
+    _STATE.append(new_item)
+    return new_item
+
+def get_current_state():
+    """
+    Returns the full in-memory disruption state.
+    In production, this would map to a Kafka state store / materialized view.
+    """
+    _ensure_seed_data()
+    return _STATE
