@@ -148,3 +148,6 @@ backend/.venv/
 **/__pycache__/
 *.pyc
 .env
+
+# frontend
+frontend/node_modules
