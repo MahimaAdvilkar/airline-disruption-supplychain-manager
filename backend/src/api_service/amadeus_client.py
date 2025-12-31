@@ -171,6 +171,53 @@ class AmadeusClient:
                 }
         return airports
     
+    def get_airline_routes(self, airline_code: str) -> Optional[Dict[str, Any]]:
+        """Get all routes operated by a specific airline"""
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            response = self.http_client.get(
+                f"{self.base_url}/v1/airline/destinations",
+                params={
+                    "airlineCode": airline_code
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            logger.info(f"Successfully fetched routes for airline {airline_code}")
+            return response.json()
+        except Exception as e:
+            logger.debug(f"Airline routes not available for {airline_code}: {e}")
+            return None
+    
+    def get_airline_schedule(self, airline_code: str, departure_date: str) -> Optional[Dict[str, Any]]:
+        """Get airline's full schedule for a specific date"""
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            # Search for scheduled flights by carrier
+            response = self.http_client.get(
+                f"{self.base_url}/v2/schedule/flights",
+                params={
+                    "carrierCode": airline_code,
+                    "scheduledDepartureDate": departure_date
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            logger.info(f"Successfully fetched schedule for airline {airline_code} on {departure_date} - {len(result.get('data', []))} flights")
+            return result
+        except Exception as e:
+            logger.warning(f"Schedule not available for {airline_code} on {departure_date}: {e}")
+            return None
+    
     def close(self):
         self.http_client.close()
 

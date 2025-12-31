@@ -54,7 +54,6 @@ export function AirlineSelector({ onAirlineSelect }: AirlineSelectorProps) {
 
   return (
     <div className="airline-selector">
-      <label htmlFor="airline-select">Select Airline</label>
       <select 
         id="airline-select"
         value={selectedAirline}

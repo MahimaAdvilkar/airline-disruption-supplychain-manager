@@ -17,25 +17,10 @@ export function FlightMap({ crisisInfo, flights24h, selectedAirline, flightTraje
   const [allFlights, setAllFlights] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchAllFlights = async () => {
-      if (!selectedAirline) {
-        setAllFlights([]);
-        return;
-      }
-      
-      try {
-        const response = await fetch(`http://localhost:8002/amadeus/all-flights`);
-        const data = await response.json();
-        const airlineFlights = data.flights.filter((f: any) => f.airline === selectedAirline);
-        setAllFlights(airlineFlights);
-      } catch (error) {
-        console.error("Failed to fetch flights:", error);
-        setAllFlights([]);
-      }
-    };
-
-    fetchAllFlights();
-  }, [selectedAirline]);
+    if (flights24h && flights24h.length > 0) {
+      setAllFlights(flights24h);
+    }
+  }, [flights24h]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -211,7 +196,6 @@ export function FlightMap({ crisisInfo, flights24h, selectedAirline, flightTraje
           .addTo(currentMap);
       });
 
-      // Fit map to trajectory
       const bounds = lineCoordinates.reduce(
         (bounds, coord) => bounds.extend(coord as [number, number]),
         new mapboxgl.LngLatBounds(lineCoordinates[0] as [number, number], lineCoordinates[0] as [number, number])

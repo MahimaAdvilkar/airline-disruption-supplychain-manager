@@ -1,25 +1,20 @@
 .airline-selector {
-  margin: 20px 0;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.airline-selector label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e0e0e0;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
 }
 
 .airline-dropdown {
-  padding: 12px 16px;
+  padding: 10px 14px;
   font-size: 14px;
   background: rgba(30, 35, 45, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: 280px;
 }
 
 .airline-dropdown:hover {
@@ -56,4 +51,19 @@
   background: rgba(220, 38, 38, 0.1);
   color: #ef4444;
   border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.selected-airline-display {
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  color: #60a5fa;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.selected-airline-display strong {
+  color: #3b82f6;
+  font-weight: 600;
 }

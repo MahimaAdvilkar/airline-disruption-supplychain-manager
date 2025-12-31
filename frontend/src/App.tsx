@@ -25,15 +25,25 @@ function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  const handleAirlineSelect = async (airlineCode: string) => {
+  const handleAirlineSelect = (airlineCode: string) => {
     setSelectedAirline(airlineCode);
+    setFlights24h([]);
+    setFlightTrajectory(null);
+  };
+
+  const handleSearchFlights = async () => {
+    if (!selectedAirline) return;
+    
+    setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8002/amadeus/flights/next24h?airline=${airlineCode}&origin=JFK`);
+      const response = await fetch(`http://localhost:8002/amadeus/all-flights?airline=${selectedAirline}`);
       const data = await response.json();
       setFlights24h(data.flights || []);
     } catch (error) {
       console.error("Failed to fetch flights:", error);
       setFlights24h([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,6 +113,13 @@ function App() {
 
           <div className="header-actions">
             <AirlineSelector onAirlineSelect={handleAirlineSelect} />
+            <button 
+              className="header-btn search-flights-btn"
+              onClick={handleSearchFlights}
+              disabled={!selectedAirline || loading}
+            >
+              {loading ? "Searching..." : "Search Flights"}
+            </button>
             <div className="status-indicator">
               <span className="status-dot online"></span>
               <span className="status-text">All Systems Operational</span>
