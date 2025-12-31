@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { API_BASE_URL } from "../constants";
+import { useQuery } from "@tanstack/react-query";
 import "./FlightSelector.css";
 
 interface Flight {
@@ -16,26 +18,25 @@ interface FlightSelectorProps {
 
 export function FlightSelector({ onFlightSelect }: FlightSelectorProps) {
   const [flights, setFlights] = useState<Flight[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedFlight, setSelectedFlight] = useState<string>("");
 
-  useEffect(() => {
-    fetchAllFlights();
-  }, []);
-
-  const fetchAllFlights = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("http://localhost:8002/amadeus/all-flights");
+  const { data, isLoading } = useQuery({
+    queryKey: ["all-flights"],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/amadeus/all-flights`);
       const data = await response.json();
-      setFlights(data.flights || []);
-    } catch (error) {
-      console.error("Failed to fetch flights:", error);
-      setFlights([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data.flights || []) as Flight[];
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  // keep local state in sync when data loads
+  if (data && flights.length === 0) {
+    setFlights(data);
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const flightNumber = e.target.value;
@@ -55,12 +56,12 @@ export function FlightSelector({ onFlightSelect }: FlightSelectorProps) {
         className="flight-selector-dropdown"
         value={selectedFlight}
         onChange={handleChange}
-        disabled={loading}
+        disabled={isLoading}
       >
         <option value="">
-          {loading ? "Loading flights..." : "Choose a flight to track"}
+          {isLoading ? "Loading flights..." : "Choose a flight to track"}
         </option>
-        {flights.map((flight) => (
+        {(data || flights).map((flight) => (
           <option key={flight.flightNumber} value={flight.flightNumber}>
             {flight.flightNumber} - {flight.origin} → {flight.destination} ({flight.status})
           </option>
