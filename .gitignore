@@ -151,3 +151,29 @@ backend/.venv/
 
 # frontend
 frontend/node_modules
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+.env
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+
+# Editor
+.vscode/
+.idea/
+
+.env
+.env.*
+backend/.env
+frontend/.env.local
+backend/.venv/
+frontend/node_modules/
+.DS_Store

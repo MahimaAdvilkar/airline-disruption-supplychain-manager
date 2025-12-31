@@ -33,6 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.error(f"Validation error: {exc}")
@@ -40,6 +41,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"error": "Validation failed", "details": exc.errors()}
     )
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -49,6 +51,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"error": "Internal server error", "message": str(exc)}
     )
 
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url.path}")
@@ -56,15 +59,17 @@ async def log_requests(request: Request, call_next):
     logger.info(f"Status: {response.status_code}")
     return response
 
+
 app.include_router(router)
 app.include_router(simulator.router)
 app.include_router(amadeus_router)
+
 
 @app.get("/health")
 def health():
     kafka_configured = bool(settings.confluent_bootstrap_servers and settings.confluent_api_key)
     amadeus_configured = bool(settings.amadeus_client_id and settings.amadeus_client_secret)
-    
+
     return {
         "status": "ok",
         "service": "api-service",
@@ -74,6 +79,7 @@ def health():
             "amadeus": "configured" if amadeus_configured else "not_configured"
         }
     }
+
 
 @app.on_event("shutdown")
 def shutdown_event():
