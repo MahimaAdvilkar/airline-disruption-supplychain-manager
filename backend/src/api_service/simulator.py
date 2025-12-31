@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 import logging
 
-from src.common.events.envelope import EventEnvelope
-from src.common.events.topics import FLIGHT_OPS_EVENTS_V1
+from backend.src.common.events.envelope import EventEnvelope
+from backend.src.common.events.topics import FLIGHT_OPS_EVENTS_V1
 from . import store
 from .kafka_client import kafka_producer
 
