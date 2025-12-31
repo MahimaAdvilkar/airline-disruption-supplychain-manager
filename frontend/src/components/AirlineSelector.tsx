@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './AirlineSelector.css';
+import { API_BASE_URL } from '../constants';
+import { useQuery } from '@tanstack/react-query';
 
 interface Airline {
   iataCode: string;
@@ -11,30 +13,21 @@ interface AirlineSelectorProps {
 }
 
 export function AirlineSelector({ onAirlineSelect }: AirlineSelectorProps) {
-  const [airlines, setAirlines] = useState<Airline[]>([]);
   const [selectedAirline, setSelectedAirline] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAirlines();
-  }, []);
-
-  const fetchAirlines = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:8002/amadeus/airlines');
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['airlines'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/amadeus/bootstrap`);
       if (!response.ok) throw new Error('Failed to fetch airlines');
       const data = await response.json();
-      setAirlines(data.airlines || []);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load airlines');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data.airlines || []) as Airline[];
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const code = e.target.value;
@@ -44,12 +37,12 @@ export function AirlineSelector({ onAirlineSelect }: AirlineSelectorProps) {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div className="airline-selector-loading">Loading airlines...</div>;
   }
 
   if (error) {
-    return <div className="airline-selector-error">{error}</div>;
+    return <div className="airline-selector-error">Failed to load airlines</div>;
   }
 
   return (
@@ -61,7 +54,7 @@ export function AirlineSelector({ onAirlineSelect }: AirlineSelectorProps) {
         className="airline-dropdown"
       >
         <option value="">Choose an airline...</option>
-        {airlines.map((airline) => (
+        {(data || []).map((airline) => (
           <option key={airline.iataCode} value={airline.iataCode}>
             {airline.iataCode} - {airline.businessName}
           </option>
