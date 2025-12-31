@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 import logging
 import sys
 from datetime import datetime, timezone
+
+from backend.src.schemas.recommendation import RecommendationRequest, RecommendationResponse
+from backend.src.agents.orchestrator import run_recommendation_pipeline
 
 from .routes import router
 from . import simulator
@@ -85,3 +88,18 @@ def health():
 def shutdown_event():
     kafka_producer.flush()
     logger.info("Application shutdown complete")
+
+
+@app.post("/agents/recommendation", response_model=RecommendationResponse)
+def agents_recommendation(req: RecommendationRequest):
+    origin = req.search.get("origin")
+    destination = req.search.get("destination")
+    departure_date = req.search.get("departure_date") or req.search.get("date")
+
+    if not origin or not destination or not departure_date:
+        raise HTTPException(
+            status_code=400,
+            detail="search.origin, search.destination, and search.departure_date (or search.date) are required",
+        )
+
+    return run_recommendation_pipeline(req)
