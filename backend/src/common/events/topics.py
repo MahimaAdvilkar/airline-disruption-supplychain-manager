@@ -1,6 +1,3 @@
-# Centralized topic names (Confluent/Kafka)
-# Keep these stable; version by suffix (v1, v2) when schemas change.
-
 FLIGHT_OPS_EVENTS_V1 = "flight_ops.events.v1"
 BOOKING_EVENTS_V1 = "booking.events.v1"
 INVENTORY_EVENTS_V1 = "inventory.events.v1"

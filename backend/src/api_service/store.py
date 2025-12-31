@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 
-# Simple in-memory store (later replaced by Kafka state store / Redis / DB)
 _STATE: List[Dict[str, Any]] = []
 
 
@@ -187,10 +186,6 @@ def get_audit(disruption_id: str):
 
 
 def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
-    """
-    Update or create a disruption record based on a flight disruption event.
-    This simulates what a Kafka consumer + ksqlDB state table would produce.
-    """
     _ensure_seed_data()
     global _STATE
 
@@ -205,7 +200,6 @@ def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
     elif delay_minutes >= 60:
         severity = "MEDIUM"
 
-    # Find existing disruption by flight number
     for d in _STATE:
         if d.get("primary_flight_number") == flight_number:
             d["severity"] = severity
@@ -236,9 +230,5 @@ def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
     return new_item
 
 def get_current_state():
-    """
-    Returns the full in-memory disruption state.
-    In production, this would map to a Kafka state store / materialized view.
-    """
     _ensure_seed_data()
     return _STATE
