@@ -1,0 +1,275 @@
+.passenger-cohorts {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.85) 100%);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.cohorts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cohorts-header h2 {
+  margin: 0;
+  color: #f1f5f9;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.tab-switcher {
+  display: flex;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.tab-switcher button {
+  padding: 8px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-switcher button.active {
+  background: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
+}
+
+.empty-selection,
+.loading-state,
+.empty-actions {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.cohorts-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-stat {
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.summary-stat .stat-value {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: #60a5fa;
+  margin-bottom: 4px;
+}
+
+.summary-stat .stat-label {
+  display: block;
+  font-size: 13px;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.cohorts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cohort-card {
+  padding: 16px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.cohort-card:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.cohort-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.priority-badge {
+  padding: 6px 14px;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.priority-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.cohort-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 8px;
+}
+
+.detail-row.description {
+  margin-top: 4px;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.detail-value.passengers {
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.detail-description {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.actions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-card {
+  padding: 16px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+}
+
+.action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.action-type {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.action-rebook {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.action-hotel_offer {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.action-refund {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.action-escalate {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.action-status {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-validated {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-proposed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-sent {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.action-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.action-target {
+  font-size: 13px;
+  color: #94a3b8;
+  font-family: 'Courier New', monospace;
+}
+
+.action-recommendation,
+.action-details,
+.action-notes {
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.action-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.action-priority {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.action-time {
+  font-size: 12px;
+  color: #94a3b8;
+}
