@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { CrisisSimulator } from "./components/CrisisSimulator.js";
+import { AirlineSelector } from "./components/AirlineSelector.js";
+import { FlightSelector } from "./components/FlightSelector.js";
 import { DisruptionOverview } from "./components/DisruptionOverview.js";
 import { PassengerCohorts } from "./components/PassengerCohorts.js";
 import { FlightMap } from "./components/FlightMap.js";
@@ -15,24 +16,60 @@ function App() {
   const [activeSubTab, setActiveSubTab] = useState<"overview" | "recovery" | "ai">("overview");
   const [crisisInfo, setCrisisInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedAirline, setSelectedAirline] = useState<string>("");
+  const [flights24h, setFlights24h] = useState<any[]>([]);
+  const [selectedFlight, setSelectedFlight] = useState<string>("");
+  const [flightTrajectory, setFlightTrajectory] = useState<any>(null);
 
   const handleCrisisTriggered = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleAirlineSelect = async (airlineCode: string) => {
+    setSelectedAirline(airlineCode);
+    try {
+      const response = await fetch(`http://localhost:8002/amadeus/flights/next24h?airline=${airlineCode}&origin=JFK`);
+      const data = await response.json();
+      setFlights24h(data.flights || []);
+    } catch (error) {
+      console.error("Failed to fetch flights:", error);
+      setFlights24h([]);
+    }
+  };
+
+  const handleFlightSelect = async (flightNumber: string) => {
+    setSelectedFlight(flightNumber);
+    try {
+      const response = await fetch(`http://localhost:8002/amadeus/flight-trajectory/${flightNumber}`);
+      const data = await response.json();
+      setFlightTrajectory(data);
+    } catch (error) {
+      console.error("Failed to fetch flight trajectory:", error);
+      setFlightTrajectory(null);
+    }
+  };
+
   const handleActivateScenario = async () => {
     setLoading(true);
     try {
-      const scenarioData = { 
-        flight_number: "AI191", 
-        airport: "DEL", 
-        delay_minutes: 180, 
-        reason: "SEVERE_WEATHER" 
-      };
-      await simulateDisruption(scenarioData);
-      setCrisisInfo("Severe Weather Crisis at DEL Hub - 180min delay activated");
+      const response = await fetch("http://localhost:8002/simulate/activate-crisis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          crisis_type: "SEVERE_WEATHER",
+          affected_airlines: ["AA", "DL", "UA"]
+        })
+      });
+      
+      const data = await response.json();
+      
+      setCrisisInfo(`CRISIS ACTIVATED: ${data.crisis.crisis_type} - Affecting ${data.crisis.affected_airlines.join(", ")}`);
       handleCrisisTriggered();
-      setActiveMainTab("operations");
+      setActiveMainTab("tracker");
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Failed to trigger crisis:", error);
       setCrisisInfo("Failed to activate scenario");
@@ -65,6 +102,7 @@ function App() {
           </div>
 
           <div className="header-actions">
+            <AirlineSelector onAirlineSelect={handleAirlineSelect} />
             <div className="status-indicator">
               <span className="status-dot online"></span>
               <span className="status-text">All Systems Operational</span>
@@ -86,16 +124,20 @@ function App() {
       <main className="app-main">
         {activeMainTab === "tracker" && (
           <>
-            {/* Flight Map - Full screen background */}
             <section className="section-map">
-              <FlightMap crisisInfo={crisisInfo} />
+              <FlightMap 
+                crisisInfo={crisisInfo} 
+                flights24h={flights24h} 
+                selectedAirline={selectedAirline}
+                flightTrajectory={flightTrajectory}
+                onFlightSelect={handleFlightSelect}
+              />
             </section>
           </>
         )}
 
         {activeMainTab === "operations" && (
           <div className="operations-container">
-            {/* Sub-tab Navigation */}
             <div className="sub-tab-navigation">
               <button 
                 className={`sub-tab-btn ${activeSubTab === "overview" ? "active" : ""}`}
@@ -117,21 +159,23 @@ function App() {
               </button>
             </div>
 
-            {/* Operations Content */}
             <div className="operations-content">
               {activeSubTab === "overview" && (
-                <div className="operations-grid">
-                  <section className="section-disruptions">
-                    <DisruptionOverview 
-                      refreshTrigger={refreshTrigger}
-                      onSelectDisruption={setSelectedDisruption}
-                    />
-                  </section>
+                <>
+                  <AirlineSelector onAirlineSelect={handleAirlineSelect} />
+                  <div className="operations-grid">
+                    <section className="section-disruptions">
+                      <DisruptionOverview 
+                        refreshTrigger={refreshTrigger}
+                        onSelectDisruption={setSelectedDisruption}
+                      />
+                    </section>
 
-                  <section className="section-cohorts">
-                    <PassengerCohorts disruptionId={selectedDisruption} />
-                  </section>
-                </div>
+                    <section className="section-cohorts">
+                      <PassengerCohorts disruptionId={selectedDisruption} />
+                    </section>
+                  </div>
+                </>
               )}
 
               {activeSubTab === "recovery" && (

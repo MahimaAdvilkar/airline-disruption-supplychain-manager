@@ -1,49 +1,20 @@
 from datetime import datetime, timezone
 from typing import Dict, Any, List
+import random
 
 _STATE: List[Dict[str, Any]] = []
+_CRISIS_SIMULATION: Dict[str, Any] = {
+    "active": False,
+    "start_time": None,
+    "cancelled_flights": [],
+    "affected_airlines": [],
+    "crisis_type": None,
+    "severity": "CRITICAL"
+}
 
 
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _ensure_seed_data():
-    global _STATE
-    if _STATE:
-        return
-
-    t = now_utc()
-    _STATE = [
-        {
-            "disruption_id": "dsp_123",
-            "severity": "HIGH",
-            "airport": "SFO",
-            "region": "US-WEST",
-            "primary_flight_number": "UA123",
-            "metrics": {
-                "delayed_flights_count": 14,
-                "cancelled_flights_count": 3,
-                "passengers_impacted_est": 640,
-                "connections_at_risk_est": 120,
-            },
-            "last_updated": t,
-        },
-        {
-            "disruption_id": "dsp_456",
-            "severity": "MEDIUM",
-            "airport": "LAX",
-            "region": "US-WEST",
-            "primary_flight_number": "DL410",
-            "metrics": {
-                "delayed_flights_count": 6,
-                "cancelled_flights_count": 1,
-                "passengers_impacted_est": 180,
-                "connections_at_risk_est": 30,
-            },
-            "last_updated": t,
-        },
-    ]
 
 
 def get_disruptions(
@@ -52,8 +23,7 @@ def get_disruptions(
     limit: int = 50,
     offset: int = 0,
 ):
-    _ensure_seed_data()
-
+    """Get disruptions filtered by airport and severity"""
     items = list(_STATE)
 
     if airport:
@@ -66,7 +36,7 @@ def get_disruptions(
 
 
 def get_disruption_by_id(disruption_id: str):
-    _ensure_seed_data()
+    """Get a specific disruption by ID"""
     for d in _STATE:
         if d.get("disruption_id") == disruption_id:
             return d
@@ -74,6 +44,7 @@ def get_disruption_by_id(disruption_id: str):
 
 
 def get_disruption_detail(disruption_id: str):
+    """Get detailed information about a disruption"""
     base = get_disruption_by_id(disruption_id)
     if not base:
         return None
@@ -90,103 +61,122 @@ def get_disruption_detail(disruption_id: str):
             **base["metrics"],
             "avg_delay_minutes": 52 if base["severity"] in ("HIGH", "CRITICAL") else 25,
         },
-        "cohorts": [
-            {"cohort_id": "c_001", "priority": "P0", "reason": "SPECIAL_ASSISTANCE", "passenger_count": 18},
-            {"cohort_id": "c_002", "priority": "P1", "reason": "TIGHT_CONNECTION", "passenger_count": 64},
-            {"cohort_id": "c_003", "priority": "P2", "reason": "LOYALTY_PREMIUM", "passenger_count": 40},
-        ],
+        "cohorts": base.get("cohorts", []),
         "last_updated": base["last_updated"],
     }
     return detail
 
 
+def activate_crisis_scenario(crisis_type: str = "SEVERE_WEATHER", affected_airlines: List[str] = None):
+    """Activate a crisis simulation that progressively cancels flights"""
+    global _CRISIS_SIMULATION
+    
+    if affected_airlines is None:
+        affected_airlines = ["AA", "DL", "UA"]
+    
+    _CRISIS_SIMULATION = {
+        "active": True,
+        "start_time": now_utc(),
+        "cancelled_flights": [],
+        "affected_airlines": affected_airlines,
+        "crisis_type": crisis_type,
+        "severity": "CRITICAL",
+        "total_cancelled": 0,
+        "cancellation_rate": 0.3
+    }
+    
+    return _CRISIS_SIMULATION
+
+
+def get_crisis_status():
+    """Get current crisis simulation status"""
+    return _CRISIS_SIMULATION
+
+
+def is_flight_cancelled(flight_number: str) -> bool:
+    """Check if a flight should be cancelled based on crisis simulation"""
+    if not _CRISIS_SIMULATION["active"]:
+        return False
+    
+    airline_code = flight_number[:2]
+    if airline_code not in _CRISIS_SIMULATION["affected_airlines"]:
+        return False
+    
+    if flight_number in _CRISIS_SIMULATION["cancelled_flights"]:
+        return True
+    
+    if random.random() < _CRISIS_SIMULATION["cancellation_rate"]:
+        _CRISIS_SIMULATION["cancelled_flights"].append(flight_number)
+        _CRISIS_SIMULATION["total_cancelled"] = len(_CRISIS_SIMULATION["cancelled_flights"])
+        return True
+    
+    return False
+
+
+def deactivate_crisis():
+    """Deactivate crisis simulation"""
+    global _CRISIS_SIMULATION
+    _CRISIS_SIMULATION = {
+        "active": False,
+        "start_time": None,
+        "cancelled_flights": [],
+        "affected_airlines": [],
+        "crisis_type": None,
+        "severity": "CRITICAL"
+    }
+    return {"status": "deactivated"}
+
+
 def get_cohorts(disruption_id: str):
+    """Get passenger cohorts for a disruption"""
     detail = get_disruption_detail(disruption_id)
     if not detail:
         return None
 
     return {
         "disruption_id": disruption_id,
-        "cohorts": [
-            {
-                "cohort_id": "c_001",
-                "priority": "P0",
-                "reason": "SPECIAL_ASSISTANCE",
-                "passengers": [
-                    {
-                        "passenger_id": "p_9001",
-                        "pnr": "AB12CD",
-                        "loyalty_tier": "GOLD",
-                        "special_assistance": True,
-                        "itinerary": {
-                            "flight_number": detail["scope"]["primary_flight_number"],
-                            "origin_airport": detail["scope"]["airport"],
-                            "destination_airport": "ORD",
-                            "scheduled_departure": "2025-12-28T01:10:00Z",
-                            "connection_flight_number": "UA456",
-                        },
-                    }
-                ],
-            }
-        ],
+        "cohorts": detail.get("cohorts", [])
     }
 
 
 def get_actions(disruption_id: str):
+    """Get recovery actions for a disruption"""
     detail = get_disruption_detail(disruption_id)
     if not detail:
         return None
 
     return {
         "disruption_id": disruption_id,
-        "actions": [
-            {
-                "action_id": "a_001",
-                "action_type": "REBOOK",
-                "priority": "P0",
-                "target": {"pnr": "AB12CD", "passenger_id": "p_9001"},
-                "details": {"recommended_option": "UA789 SFO→ORD 03:10Z", "notes": "Auto-protect under policy"},
-                "status": "VALIDATED",
-                "created_at": "2025-12-28T00:02:00Z",
-            },
-            {
-                "action_id": "a_002",
-                "action_type": "HOTEL_OFFER",
-                "priority": "P1",
-                "target": {"pnr": "ZX98YU", "passenger_id": "p_8122"},
-                "details": {"hotel": "Airport Inn", "nights": 1, "cap_usd": 180},
-                "status": "VALIDATED",
-                "created_at": "2025-12-28T00:02:10Z",
-            },
-        ],
+        "actions": []
     }
 
 
 def get_audit(disruption_id: str):
+    """Get audit trail for a disruption"""
     detail = get_disruption_detail(disruption_id)
     if not detail:
         return None
 
     return {
         "disruption_id": disruption_id,
-        "model": {"provider": "vertex_ai", "name": "gemini", "version": "tbd"},
+        "model": {"provider": "vertex_ai", "name": "gemini", "version": "1.0"},
         "decision_summary": {
             "severity": detail["severity"],
-            "total_actions": 2,
-            "key_reasons": ["high cancellations", "connection risk", "limited capacity"],
+            "total_actions": 0,
+            "key_reasons": []
         },
         "safety_and_guardrails": {
             "validated": True,
-            "blocked_actions": 1,
-            "notes": "Blocked hotel for non-overnight delays (policy guardrail)",
+            "blocked_actions": 0,
+            "notes": "All actions validated"
         },
-        "performance": {"end_to_end_latency_ms": 1240, "model_latency_ms": 680},
-        "created_at": "2025-12-28T00:02:01Z",
+        "performance": {"end_to_end_latency_ms": 0, "model_latency_ms": 0},
+        "created_at": now_utc()
     }
 
 
 def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
-    _ensure_seed_data()
+    """Create or update disruption from flight event"""
     global _STATE
 
     flight_number = payload.get("flight_number", "UNKNOWN")
@@ -223,6 +213,7 @@ def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
             "passengers_impacted_est": 80,
             "connections_at_risk_est": 15,
         },
+        "cohorts": [],
         "last_updated": now_utc(),
         "reason": reason,
     }
@@ -230,5 +221,5 @@ def upsert_disruption_from_flight_event(payload: Dict[str, Any]):
     return new_item
 
 def get_current_state():
-    _ensure_seed_data()
+    """Get current disruption state"""
     return _STATE
