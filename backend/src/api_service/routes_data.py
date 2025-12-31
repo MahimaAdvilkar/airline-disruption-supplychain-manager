@@ -1,10 +1,10 @@
 """
-Fetch airline route data from OpenFlights.org
-Free, comprehensive database of airline routes worldwide
+Fetch airline and route data from OpenFlights.org (public dataset)
+Free, comprehensive database of airline routes and airlines worldwide
 """
 import httpx
 import logging
-from typing import List, Tuple, Set, Optional
+from typing import List, Tuple, Set, Optional, Dict
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 # Cache routes data
 _routes_cache: Optional[List[dict]] = None
 _cache_expiry: Optional[datetime] = None
+
+# Cache airlines data
+_airlines_cache: Optional[List[Dict[str, str]]] = None
+_airlines_cache_expiry: Optional[datetime] = None
 
 def fetch_openflights_routes() -> List[dict]:
     """
@@ -62,6 +66,58 @@ def fetch_openflights_routes() -> List[dict]:
             logger.warning("Using stale routes cache")
             return _routes_cache
         
+        return []
+
+
+def fetch_openflights_airlines() -> List[Dict[str, str]]:
+    """
+    Fetch airlines from OpenFlights.org database
+    Format: Airline ID,Name,Alias,IATA,ICAO,Callsign,Country,Active
+    Returns list of { iataCode, businessName }
+    """
+    global _airlines_cache, _airlines_cache_expiry
+
+    # Return cached data if still valid (cache for 24 hours)
+    if _airlines_cache and _airlines_cache_expiry and datetime.now() < _airlines_cache_expiry:
+        logger.info(f"Using cached airlines data ({len(_airlines_cache)} airlines)")
+        return _airlines_cache
+
+    logger.info("Fetching fresh airlines data from OpenFlights.org")
+
+    try:
+        url = "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airlines.dat"
+
+        with httpx.Client(timeout=30.0) as client:
+            response = client.get(url)
+            response.raise_for_status()
+
+            airlines: List[Dict[str, str]] = []
+            lines = response.text.strip().split('\n')
+
+            for line in lines:
+                parts = [p.strip() for p in line.split(',')]
+                if len(parts) >= 8:
+                    name = parts[1].strip('"')
+                    iata = parts[3].strip('"')
+                    active = parts[7].strip('"')
+                    # Only include active airlines with a valid IATA code
+                    if iata and iata != '\\N' and active.upper() == 'Y':
+                        airlines.append({
+                            'iataCode': iata,
+                            'businessName': name or 'Unknown'
+                        })
+
+            _airlines_cache = airlines
+            _airlines_cache_expiry = datetime.now() + timedelta(hours=24)
+
+            logger.info(f"Successfully cached {len(airlines)} airlines from OpenFlights")
+            return airlines
+
+    except Exception as e:
+        logger.error(f"Failed to fetch OpenFlights airlines: {e}")
+        if _airlines_cache:
+            logger.warning("Using stale airlines cache")
+            return _airlines_cache
         return []
 
 
