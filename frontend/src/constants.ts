@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://127.0.0.1:8001";
+export const API_BASE_URL = "http://localhost:8002";
 
 export const COHORT_PRIORITIES = {
   P0: { label: "Critical", color: "#dc2626", description: "Medical, special assistance" },

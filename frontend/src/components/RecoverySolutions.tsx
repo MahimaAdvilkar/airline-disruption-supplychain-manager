@@ -135,14 +135,14 @@ export function RecoverySolutions({ disruptionId }: { disruptionId: string | nul
           </div>
         </div>
         <div className="metric-card warning">
-          <div className="metric-icon">⏳</div>
+          <div className="metric-icon">!</div>
           <div className="metric-content">
             <div className="metric-value">{metrics.pending}</div>
             <div className="metric-label">Pending</div>
           </div>
         </div>
         <div className="metric-card cost">
-          <div className="metric-icon">💵</div>
+          <div className="metric-icon">$</div>
           <div className="metric-content">
             <div className="metric-value">${(metrics.estimatedCost / 1000).toFixed(0)}k</div>
             <div className="metric-label">Est. Cost</div>

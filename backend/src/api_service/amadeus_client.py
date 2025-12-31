@@ -109,6 +109,115 @@ class AmadeusClient:
             logger.error(f"Failed to get flight status: {e}")
             return None
     
+    def get_airline_codes(self) -> Optional[Dict[str, Any]]:
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            response = self.http_client.get(
+                f"{self.base_url}/v1/reference-data/airlines",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            logger.info("Successfully fetched airline codes from Amadeus")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to get airline codes: {e}")
+            return None
+    
+    def get_airport_by_code(self, airport_code: str) -> Optional[Dict[str, Any]]:
+        """Fetch airport information including coordinates by IATA code"""
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            response = self.http_client.get(
+                f"{self.base_url}/v1/reference-data/locations",
+                params={
+                    "subType": "AIRPORT",
+                    "keyword": airport_code,
+                    "page[limit]": 1
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            if data.get("data") and len(data["data"]) > 0:
+                airport = data["data"][0]
+                logger.info(f"Successfully fetched airport data for {airport_code}")
+                return airport
+            
+            logger.warning(f"No airport data found for {airport_code}")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get airport data for {airport_code}: {e}")
+            return None
+    
+    def get_airports_by_codes(self, airport_codes: list) -> Dict[str, Dict[str, Any]]:
+        """Fetch multiple airports data in batch"""
+        airports = {}
+        for code in airport_codes:
+            airport_data = self.get_airport_by_code(code)
+            if airport_data:
+                geo_code = airport_data.get("geoCode", {})
+                airports[code] = {
+                    "lat": geo_code.get("latitude", 0),
+                    "lon": geo_code.get("longitude", 0),
+                    "name": airport_data.get("name", code)
+                }
+        return airports
+    
+    def get_airline_routes(self, airline_code: str) -> Optional[Dict[str, Any]]:
+        """Get all routes operated by a specific airline"""
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            response = self.http_client.get(
+                f"{self.base_url}/v1/airline/destinations",
+                params={
+                    "airlineCode": airline_code
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            logger.info(f"Successfully fetched routes for airline {airline_code}")
+            return response.json()
+        except Exception as e:
+            logger.debug(f"Airline routes not available for {airline_code}: {e}")
+            return None
+    
+    def get_airline_schedule(self, airline_code: str, departure_date: str) -> Optional[Dict[str, Any]]:
+        """Get airline's full schedule for a specific date"""
+        token = self._get_access_token()
+        if not token:
+            return None
+        
+        try:
+            # Search for scheduled flights by carrier
+            response = self.http_client.get(
+                f"{self.base_url}/v2/schedule/flights",
+                params={
+                    "carrierCode": airline_code,
+                    "scheduledDepartureDate": departure_date
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            logger.info(f"Successfully fetched schedule for airline {airline_code} on {departure_date} - {len(result.get('data', []))} flights")
+            return result
+        except Exception as e:
+            logger.warning(f"Schedule not available for {airline_code} on {departure_date}: {e}")
+            return None
+    
     def close(self):
         self.http_client.close()
 

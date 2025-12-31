@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from backend.src.api_service.amadeus_client import AmadeusClient
-from backend.src.schemas.recommendation import NormalizedOffer
+from ..api_service.amadeus_client import AmadeusClient
+from ..schemas.recommendation import NormalizedOffer
 
 
 def _count_stops(itinerary: Dict[str, Any]) -> int:

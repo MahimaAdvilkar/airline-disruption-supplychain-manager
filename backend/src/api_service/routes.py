@@ -58,8 +58,7 @@ def get_actions(disruption_id: str):
     return actions
 
 
-@router.get(
-    "/disruptions/{disruption_id}/audit",
+@router.get("/disruptions/{disruption_id}/audit",
     response_model=AuditTrail,
 )
 def get_audit(disruption_id: str):
@@ -67,6 +66,18 @@ def get_audit(disruption_id: str):
     if not audit:
         raise HTTPException(status_code=404, detail="Disruption not found")
     return audit
+
+@router.get("/disruptions/{disruption_id}/recommendations")
+def get_recommendations(disruption_id: str):
+    """Get AI-generated recommendations for a disruption"""
+    detail = store.get_disruption_detail(disruption_id)
+    if not detail:
+        raise HTTPException(status_code=404, detail="Disruption not found")
+    
+    return {
+        "disruption_id": disruption_id,
+        "recommendations": []
+    }
 
 @router.get("/simulator/state")
 def get_simulator_state():

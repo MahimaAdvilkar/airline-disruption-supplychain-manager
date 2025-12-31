@@ -15,6 +15,8 @@ interface Recommendation {
 export function AIRecommendations({ disruptionId }: { disruptionId: string | null }) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!disruptionId) {
@@ -22,87 +24,26 @@ export function AIRecommendations({ disruptionId }: { disruptionId: string | nul
       return;
     }
 
-    // Mock AI recommendations - in production, this would call your AI/ML service
-    const mockRecommendations: Recommendation[] = [
-      {
-        id: "rec1",
-        category: "operational",
-        title: "Deploy Spare Aircraft from Atlanta Hub",
-        description: "A Boeing 737-800 is available at ATL with 2-hour positioning time. This can service 85% of affected passengers on the cancelled JFK route.",
-        impact: "high",
-        confidence: 92,
-        actionable: true,
-        estimatedSavings: "$45k in compensation costs"
-      },
-      {
-        id: "rec2",
-        category: "customer",
-        title: "Prioritize Premium Cabin Passengers",
-        description: "58 First/Business class passengers detected. Immediate rebooking on partner airlines (Virgin Atlantic, Air France) available within 4 hours.",
-        impact: "high",
-        confidence: 88,
-        actionable: true
-      },
-      {
-        id: "rec3",
-        category: "financial",
-        title: "Negotiate Bulk Hotel Rates",
-        description: "Contact Marriott Bonvoy for emergency corporate rates. Historical data shows 30% savings vs individual bookings for 150+ room nights.",
-        impact: "medium",
-        confidence: 85,
-        actionable: true,
-        estimatedSavings: "$12k on accommodations"
-      },
-      {
-        id: "rec4",
-        category: "operational",
-        title: "Activate Code-Share Partners",
-        description: "SkyTeam alliance partners have 12 available seats on similar routes in next 6 hours. Automated rebooking can process 45 passengers immediately.",
-        impact: "high",
-        confidence: 90,
-        actionable: true
-      },
-      {
-        id: "rec5",
-        category: "strategic",
-        title: "Implement Dynamic Pricing for Overflow",
-        description: "92 passengers in 'flexible' cohort willing to wait 24-48hrs. Offer $200 vouchers + hotel vs $600 immediate rebooking cost.",
-        impact: "medium",
-        confidence: 78,
-        actionable: true,
-        estimatedSavings: "$37k net savings"
-      },
-      {
-        id: "rec6",
-        category: "customer",
-        title: "Proactive Communication Campaign",
-        description: "Send personalized SMS/email with rebooking options before passengers arrive at airport. Reduces call center load by 65%.",
-        impact: "medium",
-        confidence: 94,
-        actionable: true
-      },
-      {
-        id: "rec7",
-        category: "operational",
-        title: "Charter Private Jet for VIPs",
-        description: "8 high-value customers identified (lifetime value >$50k each). NetJets has Citation X available for $28k vs $400k potential churn risk.",
-        impact: "low",
-        confidence: 82,
-        actionable: true,
-        estimatedSavings: "Prevents $372k churn risk"
-      },
-      {
-        id: "rec8",
-        category: "strategic",
-        title: "Learn from Historical Pattern",
-        description: "Similar weather-related JFK disruptions occurred 4 times in past 18 months. Consider pre-positioning spare aircraft during winter storm forecasts.",
-        impact: "low",
-        confidence: 76,
-        actionable: false
+    const fetchRecommendations = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`http://localhost:8002/disruptions/${disruptionId}/recommendations`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendations');
+        }
+        const data = await response.json();
+        setRecommendations(data.recommendations || []);
+      } catch (err) {
+        console.error('Error fetching AI recommendations:', err);
+        setError('Unable to load AI recommendations. Please try again later.');
+        setRecommendations([]);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    setRecommendations(mockRecommendations);
+    fetchRecommendations();
   }, [disruptionId]);
 
   const categories = [
@@ -116,6 +57,28 @@ export function AIRecommendations({ disruptionId }: { disruptionId: string | nul
   const filteredRecs = activeCategory === "all" 
     ? recommendations 
     : recommendations.filter(r => r.category === activeCategory);
+
+  if (loading) {
+    return (
+      <div className="ai-recommendations">
+        <div className="recommendations-header">
+          <h2>🧠 AI-Powered Insights</h2>
+          <p>Loading recommendations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="ai-recommendations">
+        <div className="recommendations-header">
+          <h2>🧠 AI-Powered Insights</h2>
+          <p style={{ color: '#ef4444' }}>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const getImpactColor = (impact: string) => {
     const colors = {

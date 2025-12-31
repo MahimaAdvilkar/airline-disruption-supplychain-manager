@@ -30,7 +30,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 12px 0;
+  padding: 8px 0;
   width: 100%;
 }
 
@@ -48,11 +48,26 @@ body {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
+  white-space: nowrap;
   background: linear-gradient(135deg, #60a5fa, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  white-space: nowrap;
+}
+
+/* Flight Selector Corner */
+.flight-selector-corner {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  z-index: 10;
+  background: rgba(10, 15, 20, 0.95);
+  backdrop-filter: blur(15px);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  min-width: 350px;
 }
 
 .main-tab-navigation {
@@ -163,6 +178,25 @@ body {
 
 .activate-crisis-btn:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.search-flights-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid #10b981;
+  color: white;
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+.search-flights-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: #059669;
+}
+
+.search-flights-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
