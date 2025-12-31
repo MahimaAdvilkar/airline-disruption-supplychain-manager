@@ -82,7 +82,7 @@ def activate_crisis_scenario(crisis_type: str = "SEVERE_WEATHER", affected_airli
         "crisis_type": crisis_type,
         "severity": "CRITICAL",
         "total_cancelled": 0,
-        "cancellation_rate": 0.3
+        "cancellation_rate": 0.75
     }
     
     return _CRISIS_SIMULATION
