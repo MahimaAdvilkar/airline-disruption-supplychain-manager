@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from backend.src.schemas.recommendation import NormalizedOffer
-from backend.src.tools.amadeus_tool import AmadeusTool
+from ..schemas.recommendation import NormalizedOffer
+from ..tools.amadeus_tool import AmadeusTool
 
 
 @dataclass

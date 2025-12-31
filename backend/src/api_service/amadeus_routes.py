@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 from .amadeus_client import amadeus_client
 from .kafka_client import kafka_producer
-from backend.src.common.events.envelope import EventEnvelope
-from backend.src.common.events.topics import FLIGHT_OPS_EVENTS_V1
+from ..common.events.envelope import EventEnvelope
+from ..common.events.topics import FLIGHT_OPS_EVENTS_V1
 
 router = APIRouter(prefix="/amadeus", tags=["Amadeus"])
 logger = logging.getLogger(__name__)

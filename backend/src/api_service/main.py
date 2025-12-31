@@ -6,8 +6,8 @@ import logging
 import sys
 from datetime import datetime, timezone
 
-from backend.src.schemas.recommendation import RecommendationRequest, RecommendationResponse
-from backend.src.agents.orchestrator import run_recommendation_pipeline
+from ..schemas.recommendation import RecommendationRequest, RecommendationResponse
+from ..agents.orchestrator import run_recommendation_pipeline
 
 from .routes import router
 from . import simulator

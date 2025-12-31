@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
-from backend.src.schemas.recommendation import NormalizedOffer, RecommendedOffer
+from ..schemas.recommendation import NormalizedOffer, RecommendedOffer
 
 
 @dataclass
@@ -90,8 +90,8 @@ def decide(
         notes=f"offers_in={len(offers)}, recommended={len(recommended)}",
     )
 
-from backend.src.common.llm_client import ClaudeClient
-from backend.src.schemas.recommendation import RecommendedOffer
+from ..common.llm_client import ClaudeClient
+from ..schemas.recommendation import RecommendedOffer
 
 
 _DECISION_SCHEMA = """

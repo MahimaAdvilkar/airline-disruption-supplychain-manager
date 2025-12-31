@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from backend.src.schemas.recommendation import RecommendationRequest, RecommendationResponse
-from backend.src.agents.triage_agent import triage_llm
-from backend.src.agents.rebook_agent import rebook
-from backend.src.agents.decision_agent import decide_llm
+from ..schemas.recommendation import RecommendationRequest, RecommendationResponse
+from .triage_agent import triage_llm
+from .rebook_agent import rebook
+from .decision_agent import decide_llm
 
 
 def run_recommendation_pipeline(req: RecommendationRequest) -> RecommendationResponse:
