@@ -1,4 +1,5 @@
-export const API_BASE_URL = "http://localhost:8002";
+// Point to the running backend port (update if you change uvicorn port)
+export const API_BASE_URL = "http://localhost:8005";
 
 export const COHORT_PRIORITIES = {
   P0: { label: "Critical", color: "#dc2626", description: "Medical, special assistance" },
